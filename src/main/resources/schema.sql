@@ -20,14 +20,6 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Usuario administrador inicial (password: Admin1234!)
-INSERT INTO users (id, name, email, password, role, status)
-VALUES (
-    '00000000-0000-0000-0000-000000000001',
-    'Administrador',
-    'admin@example.com',
-    '$2a$12$placeholderHashReplaceWithRealBCryptHash',
-    'ADMIN',
-    'ACTIVE'
-);
+-- Crear el administrador con tools/DatabaseTasks.java bootstrap.
+-- La contrasena se recibe por ADMIN_PASSWORD y no se versiona.
 

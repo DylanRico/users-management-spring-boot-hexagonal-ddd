@@ -6,3 +6,7 @@ target
 *.iml
 *.log
 spec
+.env
+.env.*
+.local
+output

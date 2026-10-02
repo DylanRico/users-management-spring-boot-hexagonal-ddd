@@ -41,3 +41,10 @@ build/
 *.log
 
 /spec/
+
+# Configuracion local y credenciales
+.env
+.env.*
+!.env.example
+.local/
+output/
