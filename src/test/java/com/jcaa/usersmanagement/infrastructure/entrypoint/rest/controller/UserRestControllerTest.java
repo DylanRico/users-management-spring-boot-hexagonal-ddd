@@ -46,6 +46,37 @@ import org.springframework.test.web.servlet.MockMvc;
 @DisplayName("UserRestController")
 class UserRestControllerTest {
 
+  @Test
+  void anonymousRegistrationCannotCreatePrivilegedRoles() throws Exception {
+    for (String role : java.util.List.of("ADMIN", "REVIEWER")) {
+      mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(
+          "{\"id\":\"" + ID + "\",\"name\":\"Usuario Taller\",\"email\":\"test@example.com\",\"password\":\"SecurePass123\",\"role\":\"" + role + "\"}"))
+          .andExpect(status().isForbidden());
+    }
+    org.mockito.Mockito.verifyNoInteractions(createUserUseCase);
+  }
+
+  @Test
+  void anonymousMemberRegistrationIsAllowed() throws Exception {
+    assertAllowedRegistration("MEMBER");
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void administratorCanCreatePrivilegedRoles() throws Exception {
+    assertAllowedRegistration("ADMIN");
+  }
+
+  private void assertAllowedRegistration(String role) throws Exception {
+    when(createUserUseCase.execute(org.mockito.ArgumentMatchers.any())).thenReturn(
+        new UserModel(new UserId(ID), new UserName("Usuario Taller"), new UserEmail("test@example.com"),
+            UserPassword.fromHash("$2a$12$abcdefghijklmnopqrstuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"),
+            UserRole.fromString(role), UserStatus.PENDING));
+    mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(
+        "{\"id\":\"" + ID + "\",\"name\":\"Usuario Taller\",\"email\":\"test@example.com\",\"password\":\"SecurePass123\",\"role\":\"" + role + "\"}"))
+        .andExpect(status().isCreated()).andExpect(jsonPath("$.role").value(role));
+  }
+
   private static final String ID = "8f684dc4-0c67-4813-8d58-7b5e7f7937b8";
 
   @Autowired private MockMvc mockMvc;

@@ -25,6 +25,10 @@ $admin = Send-Json 'POST' '/api/auth/login' @{email = $env:ADMIN_EMAIL; password
 Assert-That ([bool]$admin.accessToken) 'Login de administrador sin JWT'
 $headers = @{Authorization = ('Bearer ' + $admin.accessToken)}
 Write-Output 'PASS Login administrador y JWT'
+$privileged = $false
+try { Send-Json 'POST' '/api/users' @{id=[Guid]::NewGuid().ToString();name='Rol no permitido';email='privileged-test@example.com';password='SecurePass123';role='ADMIN'} | Out-Null } catch { $privileged = [int]$_.Exception.Response.StatusCode -eq 403 }
+Assert-That $privileged 'El registro publico permitio crear ADMIN'
+Write-Output 'PASS Registro publico ADMIN rechazado (403)'
 $id = [Guid]::NewGuid().ToString()
 $password = 'Taller_' + [Guid]::NewGuid().ToString('N')
 $user = Send-Json 'POST' '/api/users' @{id=$id; name='Usuario Taller'; email=$env:TEST_EMAIL; password=$password; role='MEMBER'}

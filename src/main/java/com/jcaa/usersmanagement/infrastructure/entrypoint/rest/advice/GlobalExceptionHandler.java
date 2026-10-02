@@ -18,6 +18,12 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ApiErrorResponse handleAccessDenied(final org.springframework.security.access.AccessDeniedException ignored) {
+    return new ApiErrorResponse(403, "No tienes permisos para crear ese rol.");
+  }
+
   @ExceptionHandler(UserNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public ApiErrorResponse handleUserNotFound(final UserNotFoundException exception) {
