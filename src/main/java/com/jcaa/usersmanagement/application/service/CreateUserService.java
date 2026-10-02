@@ -37,7 +37,7 @@ public class CreateUserService implements CreateUserUseCase {
     final UserModel userToSave = UserApplicationMapper.fromCreateCommandToModel(command);
     final UserModel savedUser = saveUserPort.save(userToSave);
 
-    emailNotificationService.notifyUserCreated(savedUser, command.password());
+    emailNotificationService.notifyUserCreated(savedUser);
 
     return savedUser;
   }

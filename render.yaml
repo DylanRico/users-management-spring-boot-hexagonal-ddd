@@ -1,37 +1,35 @@
 services:
   - type: web
-    name: users-management-api
+    name: users-management-taller-dylan
     runtime: docker
     plan: free
     branch: main
-    autoDeployTrigger: commit
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /v3/api-docs
     envVars:
-      - key: DB_HOST
+      - key: DB_ENGINE
+        value: postgresql
+      - key: DB_POOL_SIZE
+        value: "2"
+      - key: DB_URL
         sync: false
-      - key: DB_PORT
-        value: "3306"
-      - key: DB_NAME
-        value: crud_usuarios
       - key: DB_USERNAME
         sync: false
       - key: DB_PASSWORD
         sync: false
-      - key: DB_SSL_MODE
-        value: REQUIRED
-      - key: SMTP_HOST
-        value: smtp.gmail.com
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_USERNAME
+      - key: JWT_SECRET
         sync: false
-      - key: SMTP_PASSWORD
-        sync: false
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=65"
+      - key: EMAIL_PROVIDER
+        value: gmail-api
       - key: SMTP_FROM_ADDRESS
         sync: false
       - key: SMTP_FROM_NAME
-        value: Gestion de Usuarios
-      - key: JWT_SECRET
-        generateValue: true
-      - key: JWT_EXPIRATION_SECONDS
-        value: "900"
+        value: Gestion de Usuarios - Taller
+      - key: GMAIL_CLIENT_ID
+        sync: false
+      - key: GMAIL_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_REFRESH_TOKEN
+        sync: false

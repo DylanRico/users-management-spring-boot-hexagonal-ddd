@@ -45,7 +45,7 @@ class EmailNotificationServiceTest {
   private static final String NAME = "John Arrieta";
   private static final String PASSWORD = "SecurePass1";
   private static final String TEMPLATE_CONTENT =
-      "<html>{{name}} {{email}} {{password}} {{role}} {{status}}</html>";
+      "<html>{{name}} {{email}} {{role}}</html>";
 
   private UserModel user;
 
@@ -70,7 +70,7 @@ class EmailNotificationServiceTest {
   @DisplayName("notifyUserCreated() invoca el puerto con el email y asunto correctos")
   void shouldSendCreatedNotificationToCorrectEmail() {
     // Act
-    service.notifyUserCreated(user, PASSWORD);
+    service.notifyUserCreated(user);
 
     // Assert
     verify(emailSenderPort)
@@ -78,7 +78,9 @@ class EmailNotificationServiceTest {
             argThat(
                 dest ->
                     EMAIL.equals(dest.getDestinationEmail())
-                        && dest.getSubject().contains("creada")));
+                        && dest.getSubject().contains("creada")
+                        && !dest.getBody().contains(PASSWORD)
+                        && !dest.getBody().contains(user.getPassword().value())));
   }
 
   // ── notifyUserUpdated() — flujo feliz
@@ -109,7 +111,7 @@ class EmailNotificationServiceTest {
     doThrow(cause).when(emailSenderPort).send(any());
 
     // Act & Assert
-    assertDoesNotThrow(() -> service.notifyUserCreated(user, PASSWORD));
+    assertDoesNotThrow(() -> service.notifyUserCreated(user));
   }
 
   // ── re-lanzar EmailSenderException en notifyUserUpdated
@@ -136,7 +138,7 @@ class EmailNotificationServiceTest {
     doReturn(null).when(serviceSpy).openResourceStream(any());
 
     // Act & Assert
-    assertThrows(EmailSenderException.class, () -> serviceSpy.notifyUserCreated(user, PASSWORD));
+    assertThrows(EmailSenderException.class, () -> serviceSpy.notifyUserCreated(user));
   }
 
   // ── loadTemplate() — rama: IOException al leer el stream
@@ -151,7 +153,7 @@ class EmailNotificationServiceTest {
     doReturn(brokenStream).when(serviceSpy).openResourceStream(any());
 
     // Act & Assert
-    assertThrows(EmailSenderException.class, () -> serviceSpy.notifyUserCreated(user, PASSWORD));
+    assertThrows(EmailSenderException.class, () -> serviceSpy.notifyUserCreated(user));
   }
 
   // ── renderTemplate() — todos los tokens se sustituyen
@@ -165,7 +167,7 @@ class EmailNotificationServiceTest {
     doReturn(templateStream).when(serviceSpy).openResourceStream(any());
 
     // Act
-    serviceSpy.notifyUserCreated(user, PASSWORD);
+    serviceSpy.notifyUserCreated(user);
 
     // Assert — el body enviado contiene los valores interpolados
     verify(spyEmailSenderPort)

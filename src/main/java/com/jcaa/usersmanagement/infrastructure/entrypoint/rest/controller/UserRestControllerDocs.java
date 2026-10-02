@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * vive aquí para mantener el controlador limpio y enfocado únicamente en la lógica de despacho.
  */
 @Tag(name = "Users", description = "Gestión de usuarios: crear, consultar, actualizar y eliminar.")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public interface UserRestControllerDocs {
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -35,7 +36,8 @@ public interface UserRestControllerDocs {
       description =
           "Registra un nuevo usuario en el sistema. "
               + "El ID debe ser único y el correo no puede estar en uso. "
-              + "Se enviará un correo de bienvenida con las credenciales al registrarlo.")
+              + "El registro público permite MEMBER; crear ADMIN o REVIEWER requiere un JWT de ADMIN. "
+              + "Se enviará una notificación sin contraseñas; la cuenta queda PENDING hasta su activación.")
   @ApiResponses({
     @ApiResponse(
         responseCode = "201",

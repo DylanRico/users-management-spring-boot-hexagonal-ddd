@@ -5,6 +5,7 @@ import com.jcaa.usersmanagement.domain.exception.EmailSenderException;
 import com.jcaa.usersmanagement.domain.model.EmailDestinationModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -19,6 +20,7 @@ import java.util.Properties;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "email.provider", havingValue = "smtp", matchIfMissing = true)
 public class JavaMailEmailSenderAdapter implements EmailSenderPort {
 
   private static final String MAIL_SMTP_HOST = "mail.smtp.host";
@@ -82,6 +84,10 @@ public class JavaMailEmailSenderAdapter implements EmailSenderPort {
     properties.put(MAIL_SMTP_PORT, String.valueOf(config.port()));
     properties.put(MAIL_SMTP_AUTH, "true");
     properties.put(MAIL_SMTP_STARTTLS, "true");
+    properties.put("mail.smtp.starttls.required", "true");
+    properties.put("mail.smtp.connectiontimeout", "10000");
+    properties.put("mail.smtp.timeout", "15000");
+    properties.put("mail.smtp.writetimeout", "15000");
     return properties;
   }
 }

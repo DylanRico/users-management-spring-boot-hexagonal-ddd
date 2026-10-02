@@ -17,6 +17,7 @@ import com.jcaa.usersmanagement.infrastructure.entrypoint.rest.mapper.UserRestMa
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +43,7 @@ public class UserRestController implements UserRestControllerDocs {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasRole('ADMIN') or #request.role().trim().equalsIgnoreCase('MEMBER')")
   public UserRestResponse create(@Valid @RequestBody final CreateUserRestRequest request) {
     final CreateUserCommand command = UserRestMapper.toCreateCommand(request);
     final UserModel user = createUserUseCase.execute(command);

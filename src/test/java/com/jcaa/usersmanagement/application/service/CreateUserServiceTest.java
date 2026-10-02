@@ -84,7 +84,7 @@ class CreateUserServiceTest {
         () -> assertEquals("u-01", result.getId().value(), "id del usuario guardado"));
 
     verify(saveUserPort).save(any(UserModel.class));
-    verify(emailNotificationService).notifyUserCreated(savedUser, "Pass1234");
+    verify(emailNotificationService).notifyUserCreated(savedUser);
   }
 
   // ── email duplicado
@@ -110,7 +110,7 @@ class CreateUserServiceTest {
     // Act & Assert
     assertThrows(UserAlreadyExistsException.class, () -> service.execute(command));
     verify(saveUserPort, never()).save(any());
-    verify(emailNotificationService, never()).notifyUserCreated(any(), any());
+    verify(emailNotificationService, never()).notifyUserCreated(any());
   }
 
   // ── validación del command
