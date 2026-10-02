@@ -40,17 +40,34 @@ public class DataSourceSpringConfig {
   @Value(PROP_DB_SSL_MODE)
   private String dbSslMode;
 
+  @Value("${db.engine:mysql}")
+  private String dbEngine;
+
+  @Value("${db.url:}")
+  private String dbUrl;
+
+  @Value("${db.pool-size:10}")
+  private int poolSize;
+
   @Bean
   public DataSource dataSource() {
     final DatabaseConfig config =
         new DatabaseConfig(dbHost, dbPort, dbName, dbUsername, dbPassword, dbSslMode);
 
+    if (!dbEngine.equals("mysql") && !dbEngine.equals("postgresql")) {
+      throw new IllegalArgumentException("DB_ENGINE debe ser mysql o postgresql");
+    }
+    final String jdbcUrl = dbUrl.isBlank() && dbEngine.equals("mysql") ? config.buildJdbcUrl() : dbUrl;
+    final String prefix = dbEngine.equals("mysql") ? "jdbc:mysql:" : "jdbc:postgresql:";
+    if (!jdbcUrl.startsWith(prefix)) {
+      throw new IllegalArgumentException("DB_URL debe corresponder a DB_ENGINE");
+    }
     final HikariConfig hikariConfig = new HikariConfig();
-    hikariConfig.setJdbcUrl(config.buildJdbcUrl());
+    hikariConfig.setJdbcUrl(jdbcUrl);
     hikariConfig.setUsername(config.username());
     hikariConfig.setPassword(config.password());
-    hikariConfig.setMaximumPoolSize(10);
-    hikariConfig.setMinimumIdle(2);
+    hikariConfig.setMaximumPoolSize(poolSize);
+    hikariConfig.setMinimumIdle(Math.min(2, poolSize));
     hikariConfig.setConnectionTimeout(30_000);
 
     log.info(LOG_DATASOURCE_INIT, dbHost, dbPort);

@@ -9,7 +9,16 @@ function Send-Json([string]$method, [string]$path, $body, $headers = @{}) {
     Invoke-RestMethod @options
 }
 if (-not $env:ADMIN_EMAIL -or -not $env:ADMIN_PASSWORD -or -not $env:TEST_EMAIL) { throw 'Define ADMIN_EMAIL, ADMIN_PASSWORD y TEST_EMAIL; no se imprimen credenciales.' }
-$docs = Invoke-RestMethod ($BaseUrl.TrimEnd('/') + '/v3/api-docs')
+$deadline = [DateTime]::UtcNow.AddSeconds(60)
+do {
+    try {
+        $docs = Invoke-RestMethod ($BaseUrl.TrimEnd('/') + '/v3/api-docs') -TimeoutSec 5
+        break
+    } catch {
+        if ([DateTime]::UtcNow -ge $deadline) { throw 'La API no estuvo disponible en 60 segundos' }
+        Start-Sleep -Seconds 1
+    }
+} while ($true)
 Assert-That ([bool]$docs.paths.'/api/users') 'Swagger no describe la API'
 Write-Output 'PASS Swagger /v3/api-docs'
 $admin = Send-Json 'POST' '/api/auth/login' @{email = $env:ADMIN_EMAIL; password = $env:ADMIN_PASSWORD}

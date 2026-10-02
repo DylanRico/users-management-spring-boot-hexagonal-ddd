@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: crud_usuarios
+      POSTGRES_USER: users_app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./src/main/resources/schema-postgresql.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U users_app -d crud_usuarios"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: .
+    image: users-management-api:local
+    environment:
+      PORT: "8080"
+      DB_ENGINE: postgresql
+      DB_URL: jdbc:postgresql://postgres:5432/crud_usuarios
+      DB_USERNAME: users_app
+      DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD}
+      DB_POOL_SIZE: "2"
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_ADDRESS: ${SMTP_FROM_ADDRESS:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

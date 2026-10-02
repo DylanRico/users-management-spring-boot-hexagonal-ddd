@@ -14,7 +14,7 @@ class DatabaseTasks {
   }
 
   public static void main(String[] args) throws Exception {
-    if (args.length != 1) throw new IllegalArgumentException("Uso: DatabaseTasks.java bootstrap|migrate");
+    if (args.length != 1) throw new IllegalArgumentException("Uso: DatabaseTasks.java bootstrap|migrate|verify");
     switch (args[0]) {
       case "bootstrap" -> {
         try (Connection db = connect("DB_")) {
@@ -35,7 +35,28 @@ class DatabaseTasks {
         }
       }
       case "migrate" -> migrate();
+      case "verify" -> verify();
       default -> throw new IllegalArgumentException("Operacion desconocida");
+    }
+  }
+
+  static void verify() throws Exception {
+    String sql = "SELECT id,name,email,password,role,status,created_at,updated_at FROM users ORDER BY id";
+    try (Connection source = connect("SOURCE_DB_"); Connection target = connect("DB_");
+         Statement leftQuery = source.createStatement(); Statement rightQuery = target.createStatement();
+         ResultSet left = leftQuery.executeQuery(sql); ResultSet right = rightQuery.executeQuery(sql)) {
+      int count = 0;
+      while (left.next()) {
+        if (!right.next()) throw new IllegalStateException("Faltan usuarios en el destino");
+        for (int i = 1; i <= 8; i++) {
+          Object a = i <= 6 ? left.getString(i) : left.getObject(i, java.time.LocalDateTime.class);
+          Object b = i <= 6 ? right.getString(i) : right.getObject(i, java.time.LocalDateTime.class);
+          if (!java.util.Objects.equals(a, b)) throw new IllegalStateException("Migracion distinta en columna " + i);
+        }
+        count++;
+      }
+      if (right.next()) throw new IllegalStateException("Usuarios adicionales en el destino");
+      System.out.println("PASS Comparacion completa: " + count + " usuarios, 8 columnas identicas; credenciales omitidas.");
     }
   }
 
@@ -53,8 +74,8 @@ class DatabaseTasks {
              PreparedStatement insert = target.prepareStatement("INSERT INTO users (" + columns + ") VALUES (?,?,?,?,?,?,?,?)")) {
           while (users.next()) {
             for (int i = 1; i <= 6; i++) insert.setString(i, users.getString(i));
-            insert.setTimestamp(7, users.getTimestamp(7));
-            insert.setTimestamp(8, users.getTimestamp(8));
+            insert.setObject(7, users.getObject(7, java.time.LocalDateTime.class));
+            insert.setObject(8, users.getObject(8, java.time.LocalDateTime.class));
             insert.executeUpdate();
             count++;
           }

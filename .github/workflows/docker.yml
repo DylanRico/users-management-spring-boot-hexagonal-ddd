@@ -34,9 +34,34 @@ jobs:
       - name: Registro, activacion, login y JWT
         shell: pwsh
         run: ./tools/Smoke.ps1
+      - name: Detener API MySQL e iniciar PostgreSQL
+        run: |
+          docker compose stop api
+          docker compose -f compose.postgresql.yaml up -d --wait postgres
+      - name: Migrar y comparar los ocho campos de todos los usuarios
+        env:
+          SOURCE_DB_URL: jdbc:mysql://127.0.0.1:3307/crud_usuarios?sslMode=DISABLED&serverTimezone=UTC&allowPublicKeyRetrieval=true
+          SOURCE_DB_USERNAME: users_app
+          SOURCE_DB_PASSWORD: ci-disposable-user-password
+          DB_URL: jdbc:postgresql://127.0.0.1:5433/crud_usuarios
+          DB_USERNAME: users_app
+        run: |
+          java --class-path 'target/dependency/*' tools/DatabaseTasks.java migrate
+          java --class-path 'target/dependency/*' tools/DatabaseTasks.java verify
+      - name: Iniciar API PostgreSQL
+        run: docker compose -f compose.postgresql.yaml up -d --wait api
+      - name: Login del administrador migrado y operaciones PostgreSQL
+        env:
+          TEST_EMAIL: postgres-smoke@example.com
+        shell: pwsh
+        run: ./tools/Smoke.ps1
       - name: Logs de Docker
         if: always()
-        run: docker compose logs --no-color --tail=30
+        run: |
+          docker compose logs --no-color --tail=30
+          docker compose -f compose.postgresql.yaml logs --no-color --tail=30
       - name: Cerrar contenedores temporales
         if: always()
-        run: docker compose down
+        run: |
+          docker compose -f compose.postgresql.yaml down
+          docker compose down
