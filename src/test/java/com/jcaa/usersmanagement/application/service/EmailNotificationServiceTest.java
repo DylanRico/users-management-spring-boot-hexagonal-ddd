@@ -101,7 +101,7 @@ class EmailNotificationServiceTest {
   // ── re-lanzar EmailSenderException en notifyUserCreated
 
   @Test
-  @DisplayName("notifyUserCreated() re-lanza EmailSenderException cuando el puerto falla")
+  @DisplayName("Un fallo de correo no invalida la creacion ya persistida")
   void shouldRethrowEmailSenderExceptionOnCreate() {
     // Arrange
     final EmailSenderException cause =
@@ -109,13 +109,13 @@ class EmailNotificationServiceTest {
     doThrow(cause).when(emailSenderPort).send(any());
 
     // Act & Assert
-    assertThrows(EmailSenderException.class, () -> service.notifyUserCreated(user, PASSWORD));
+    assertDoesNotThrow(() -> service.notifyUserCreated(user, PASSWORD));
   }
 
   // ── re-lanzar EmailSenderException en notifyUserUpdated
 
   @Test
-  @DisplayName("notifyUserUpdated() re-lanza EmailSenderException cuando el puerto falla")
+  @DisplayName("Un fallo de correo no invalida la actualizacion ya persistida")
   void shouldRethrowEmailSenderExceptionOnUpdate() {
     // Arrange
     final EmailSenderException cause =
@@ -123,7 +123,7 @@ class EmailNotificationServiceTest {
     doThrow(cause).when(emailSenderPort).send(any());
 
     // Act & Assert
-    assertThrows(EmailSenderException.class, () -> service.notifyUserUpdated(user));
+    assertDoesNotThrow(() -> service.notifyUserUpdated(user));
   }
 
   // ── loadTemplate() — rama: template no encontrado (is == null)
