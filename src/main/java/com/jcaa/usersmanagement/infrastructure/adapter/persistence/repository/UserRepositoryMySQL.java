@@ -16,6 +16,7 @@ import com.jcaa.usersmanagement.infrastructure.adapter.persistence.mapper.UserPe
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -27,6 +28,7 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
+@ConditionalOnProperty(name = "db.engine", havingValue = "mysql", matchIfMissing = true)
 @RequiredArgsConstructor
 public class UserRepositoryMySQL
     implements SaveUserPort,
