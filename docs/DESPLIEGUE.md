@@ -61,6 +61,8 @@ No ejecutar ambas API en el puerto 8080 simultaneamente. Para comprobar registro
 
 ## Render gratuito
 
+Definir `SERVER_FORWARD_HEADERS_STRATEGY=framework` para que Spring reconozca las cabeceras del proxy de Render y Swagger genere su URL publica con HTTPS.
+
 Crear un Web Service desde el fork, rama main, runtime Docker, plan Free. `render.yaml` contiene la configuracion reproducible. Health Check Path: `/v3/api-docs`. Mantener la URL del pooler con `sslmode=require` y definir JWT_SECRET aleatorio, nunca el valor de desarrollo.
 
 Render Free restringe los puertos SMTP 25, 465 y 587. El adaptador `GmailApiEmailSenderAdapter` envia por HTTPS usando `EMAIL_PROVIDER=gmail-api`. Habilitar Gmail API en un proyecto Google Cloud y autorizar exclusivamente `https://www.googleapis.com/auth/gmail.send`. Configurar `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` y `SMTP_FROM_ADDRESS` en Render. El remitente debe coincidir con la cuenta autorizada. No publicar estos valores en GitHub ni en el informe.
