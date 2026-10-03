@@ -7,6 +7,8 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /v3/api-docs
     envVars:
+      - key: SERVER_FORWARD_HEADERS_STRATEGY
+        value: framework
       - key: DB_ENGINE
         value: postgresql
       - key: DB_POOL_SIZE
